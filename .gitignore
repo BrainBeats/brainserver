@@ -1,2 +1,4 @@
+*.class
 .idea/
 src/main/java/server/models/*
+.gradle/

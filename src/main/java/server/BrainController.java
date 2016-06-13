@@ -12,7 +12,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 @RestController
-public class HelloController {
+public class BrainController {
 
     private File modelHard;
     private File modelCalm;
@@ -25,28 +25,37 @@ public class HelloController {
     @RequestMapping(method = RequestMethod.POST, value = "/models/hard")
     public String uploadHard(@RequestParam("file") MultipartFile file) {
         try {
-            modelHard = convert(file);
+            modelHard = convert(file, Weka.HARD + ".csv");
         } catch (IOException e) {
             return e.getMessage();
         }
-        JSONObject json = createResponse(file, "hard");
+        JSONObject json = createResponse(file, Weka.HARD);
         return json.toJSONString();
     }
 
     @RequestMapping(method = RequestMethod.POST, value = "/models/calm")
     public String uploadCalm(@RequestParam("file") MultipartFile file) {
         try {
-            modelCalm = convert(file);
+            modelCalm = convert(file, Weka.CALM + ".csv");
         } catch (IOException e) {
             return e.getMessage();
         }
-        JSONObject json = createResponse(file, "calm");
+        JSONObject json = createResponse(file, Weka.CALM);
         return json.toJSONString();
+    }
+
+
+    @RequestMapping(method = RequestMethod.POST, value = "/models/build")
+    public String buildmodels() {
+        if (modelMissing()) {
+            return "Model missing";
+        }
+        return Weka.buildModels();
     }
 
     @RequestMapping(method = RequestMethod.GET, value = "/models")
     public String getFilenames() {
-        if (modelCalm == null || modelHard == null) {
+        if (modelMissing()) {
             return "No models on server";
         } else {
             JSONObject json = new JSONObject();
@@ -54,6 +63,10 @@ public class HelloController {
             json.put("hard", modelHard.getName());
             return json.toJSONString();
         }
+    }
+
+    private boolean modelMissing() {
+        return modelCalm == null || modelHard == null;
     }
 
     private JSONObject createResponse(@RequestParam("file") MultipartFile file, String hard) {
@@ -64,9 +77,8 @@ public class HelloController {
         return json;
     }
 
-    public File convert(MultipartFile file) throws IOException {
-        String pathToModelDir = "src/main/java/server/models/";
-        File convFile = new File(pathToModelDir + file.getOriginalFilename());
+    public File convert(MultipartFile file, String filename) throws IOException {
+        File convFile = new File(Weka.MODEL_DIR_PATH + filename);
         convFile.createNewFile();
         FileOutputStream fos = new FileOutputStream(convFile);
         fos.write(file.getBytes());
