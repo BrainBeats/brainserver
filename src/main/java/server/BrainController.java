@@ -53,6 +53,24 @@ public class BrainController {
         return Weka.buildModels();
     }
 
+    /**
+     *Compares test csv to models.
+     *
+     * @param file that contains test data
+     */
+    @RequestMapping(method = RequestMethod.POST, value = "/models/testmodel")
+    public String testModel(@RequestParam("file") MultipartFile file) {
+        if (modelMissing()) {
+            return "Model(s) missing";
+        }
+        try {
+            convert(file, Weka.TEST_MODEL + ".csv");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return Weka.compareToModel();
+    }
+
     @RequestMapping(method = RequestMethod.GET, value = "/models")
     public String getFilenames() {
         if (modelMissing()) {

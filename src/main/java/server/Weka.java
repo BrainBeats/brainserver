@@ -1,6 +1,7 @@
 package server;
 
 import weka.classifiers.Classifier;
+import weka.classifiers.Evaluation;
 import weka.classifiers.trees.J48;
 import weka.core.Instances;
 import weka.core.converters.ConverterUtils;
@@ -16,6 +17,7 @@ public class Weka {
 
     public static String HARD_MODEL = "hardmodel";
     public static String CALM_MODEL = "calmmodel";
+    public static String TEST_MODEL = "testmodel";
 
     public static String FILETYPE = ".csv";
 
@@ -53,6 +55,39 @@ public class Weka {
             System.out.println("\nModele calm serialise\n======\n");
 
             return "Serialise!";
+        } catch (Exception e) {
+            return e.getMessage();
+        }
+    }
+
+    /**
+     * This method should not be invoked before the models have been build with buildmodels.
+     */
+    public static String compareToModel() {
+        try {
+            ConverterUtils.DataSource source_test = new ConverterUtils.DataSource(MODEL_DIR_PATH + TEST_MODEL + FILETYPE);
+            Instances test = source_test.getDataSet();
+            // Set class index
+            test.setClassIndex(0);
+
+            //Deserialize model
+            Classifier cls_hard = (Classifier) weka.core.SerializationHelper.read(MODEL_DIR_PATH + HARD_MODEL + MODEL_FILETYPE);
+            Classifier cls_calm = (Classifier) weka.core.SerializationHelper.read(MODEL_DIR_PATH + CALM_MODEL + MODEL_FILETYPE);
+            //Test the model
+
+            Evaluation eval_hard = new Evaluation(test);
+            eval_hard.evaluateModel(cls_hard, test);
+
+            Evaluation eval_calm = new Evaluation(test);
+            eval_calm.evaluateModel(cls_calm, test);
+
+            System.out.println(eval_hard.toSummaryString("\nResults avec modele hard\n======\n", false));
+            System.out.println(eval_calm.toSummaryString("\nResults avec modele calm\n======\n", false));
+            if (eval_calm.relativeAbsoluteError() < eval_hard.relativeAbsoluteError()) {
+                return "calm";
+            } else {
+                return "exite";
+            }
         } catch (Exception e) {
             return e.getMessage();
         }
