@@ -1,6 +1,8 @@
 package server;
 
 import org.json.simple.JSONObject;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -43,11 +45,15 @@ public class BrainController {
 
 
     @RequestMapping(method = RequestMethod.POST, value = "/models/build")
-    public String buildmodels() {
+    public ResponseEntity buildmodels() {
         if (modelMissing()) {
-            return "Model missing";
+            return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body("Model missing");
         }
-        return Weka.buildModels();
+        try {
+            return ResponseEntity.status(HttpStatus.OK).body(Weka.buildModels());
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Weka failed, is sended file ok?");
+        }
     }
 
     /**
@@ -56,16 +62,21 @@ public class BrainController {
      * @param file that contains test data
      */
     @RequestMapping(method = RequestMethod.POST, value = "/models/testmodel")
-    public String testModel(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity testModel(@RequestParam("file") MultipartFile file) {
         if (modelMissing()) {
-            return "Model(s) missing";
+            return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body("Model missing");
         }
         try {
             write(file, Weka.TEST_MODEL + ".csv");
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return Weka.compareToModel();
+        try {
+            return ResponseEntity.status(HttpStatus.OK).body(Weka.compareToModel());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body("Weka failed: " + e.getLocalizedMessage());
+        }
     }
 
     @RequestMapping(method = RequestMethod.GET, value = "/models")
