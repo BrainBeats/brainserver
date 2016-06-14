@@ -14,9 +14,6 @@ import java.io.IOException;
 @RestController
 public class BrainController {
 
-    private File modelHard;
-    private File modelCalm;
-
     @RequestMapping("/")
     public String index() {
         return "BrainBeatsServer";
@@ -25,7 +22,7 @@ public class BrainController {
     @RequestMapping(method = RequestMethod.POST, value = "/models/hard")
     public String uploadHard(@RequestParam("file") MultipartFile file) {
         try {
-            modelHard = convert(file, Weka.HARD + ".csv");
+            write(file, Weka.HARD + ".csv");
         } catch (IOException e) {
             return e.getMessage();
         }
@@ -36,7 +33,7 @@ public class BrainController {
     @RequestMapping(method = RequestMethod.POST, value = "/models/calm")
     public String uploadCalm(@RequestParam("file") MultipartFile file) {
         try {
-            modelCalm = convert(file, Weka.CALM + ".csv");
+            write(file, Weka.CALM + ".csv");
         } catch (IOException e) {
             return e.getMessage();
         }
@@ -64,7 +61,7 @@ public class BrainController {
             return "Model(s) missing";
         }
         try {
-            convert(file, Weka.TEST_MODEL + ".csv");
+            write(file, Weka.TEST_MODEL + ".csv");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -77,14 +74,15 @@ public class BrainController {
             return "No models on server";
         } else {
             JSONObject json = new JSONObject();
-            json.put("calm", modelCalm.getName());
-            json.put("hard", modelHard.getName());
+            json.put("calm", Weka.CALM);
+            json.put("hard", Weka.HARD);
             return json.toJSONString();
         }
     }
 
     private boolean modelMissing() {
-        return modelCalm == null || modelHard == null;
+        return !new File(Weka.MODEL_DIR_PATH + Weka.HARD + Weka.FILETYPE).exists() ||
+                !new File(Weka.MODEL_DIR_PATH + Weka.CALM + Weka.FILETYPE).exists();
     }
 
     private JSONObject createResponse(@RequestParam("file") MultipartFile file, String hard) {
@@ -95,7 +93,7 @@ public class BrainController {
         return json;
     }
 
-    public File convert(MultipartFile file, String filename) throws IOException {
+    public File write(MultipartFile file, String filename) throws IOException {
         File convFile = new File(Weka.MODEL_DIR_PATH + filename);
         convFile.createNewFile();
         FileOutputStream fos = new FileOutputStream(convFile);
