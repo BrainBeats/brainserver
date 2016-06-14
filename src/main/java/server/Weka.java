@@ -56,7 +56,11 @@ public class Weka {
 
             return "Serialise!";
         } catch (Exception e) {
-            return e.getMessage();
+            StringBuilder stb = new StringBuilder();
+            stb.append("Exception. " + e.toString() + "\n");
+            stb.append("MESSAGE: " + e.getMessage() + "\"");
+            stb.append("Stacktrace: " + e.getStackTrace().toString());
+            return stb.toString();
         }
     }
 
