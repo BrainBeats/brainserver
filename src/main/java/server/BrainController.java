@@ -1,6 +1,7 @@
 package server;
 
 import org.json.simple.JSONObject;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -77,6 +78,13 @@ public class BrainController {
             e.printStackTrace();
             return ResponseEntity.badRequest().body("Weka failed: " + e.getLocalizedMessage());
         }
+    }
+
+
+    @RequestMapping(method = RequestMethod.GET, value = "/models/testmodel")
+    public FileSystemResource getTestModel() {
+        File file = new File(Weka.MODEL_DIR_PATH + Weka.TEST_MODEL + Weka.FILETYPE);
+        return new FileSystemResource(file);
     }
 
     @RequestMapping(method = RequestMethod.GET, value = "/models")
