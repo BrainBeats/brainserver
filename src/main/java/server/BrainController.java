@@ -81,6 +81,18 @@ public class BrainController {
     }
 
 
+    @RequestMapping(method = RequestMethod.GET, value = "/models/calm")
+    public FileSystemResource getCalmModel() {
+        File file = new File(Weka.MODEL_DIR_PATH + Weka.CALM + Weka.FILETYPE);
+        return new FileSystemResource(file);
+    }
+
+    @RequestMapping(method = RequestMethod.GET, value = "/models/hard")
+    public FileSystemResource getHardModel() {
+        File file = new File(Weka.MODEL_DIR_PATH + Weka.HARD + Weka.FILETYPE);
+        return new FileSystemResource(file);
+    }
+
     @RequestMapping(method = RequestMethod.GET, value = "/models/testmodel")
     public FileSystemResource getTestModel() {
         File file = new File(Weka.MODEL_DIR_PATH + Weka.TEST_MODEL + Weka.FILETYPE);
@@ -97,6 +109,18 @@ public class BrainController {
             json.put("hard", Weka.HARD);
             return json.toJSONString();
         }
+    }
+
+    @RequestMapping(method = RequestMethod.POST, value = "/delete/calm")
+    public boolean deleteCalmModel() {
+        File file = new File(Weka.MODEL_DIR_PATH + Weka.CALM + Weka.FILETYPE);
+        return file.delete();
+    }
+
+    @RequestMapping(method = RequestMethod.POST, value = "/delete/hard")
+    public boolean deleteHardModel() {
+        File file = new File(Weka.MODEL_DIR_PATH + Weka.HARD + Weka.FILETYPE);
+        return file.delete();
     }
 
     private boolean modelMissing() {
